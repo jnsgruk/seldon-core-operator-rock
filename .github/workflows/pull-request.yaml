@@ -1,0 +1,14 @@
+name: Pull Request
+
+on:
+  pull-request:
+    branches:
+      - main
+    paths:
+      - "rockcraft.yaml"
+      - "files/**"
+      - ".github/workflows/**.yaml"
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml

@@ -1,0 +1,4 @@
+*.rock
+*.swp
+*.tar.gz
+Dockerfile
