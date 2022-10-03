@@ -1,7 +1,7 @@
 # Seldon Core Operator OCI Image
 
 This repository is intended as a demonstration of how to port an OCI image that it otherwise
-defined using a `Dockerfile` to one built with [`rockcraft`](https://github.com/canonical/rockcraft). 
+defined using a `Dockerfile` to one built with [rockcraft](https://github.com/canonical/rockcraft). 
 
 It provides a direct port of this [Dockerfile](https://github.com/SeldonIO/seldon-core/blob/5591c42b6a40a44641b848d86f9228f623c64598/operator/Dockerfile).
 
@@ -24,7 +24,7 @@ $ rockcraft pack
 # Import the ROCK into the local docker image cache
 $ sudo skopeo --insecure-policy copy oci-archive:seldon-core-operator_1.14.1_amd64.rock docker-daemon:jnsgruk/seldon-core-operator:1.14.1
 
-# Run the image, invoking Traefik through pebble
+# Run the image, invoking `manager` through pebble
 $ docker run --rm -it jnsgruk/seldon-core-operator:1.14.1
 ```
 

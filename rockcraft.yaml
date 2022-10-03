@@ -1,0 +1,99 @@
+name: seldon-core-operator
+summary: Convert your ML models or language wrappers into microservices
+description: |
+  Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or
+  language wrappers (Python, Java, etc.) into production REST/GRPC
+  microservices.
+
+  Seldon handles scaling to thousands of production machine learning models and
+  provides advanced machine learning capabilities out of the box including
+  Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests,
+  Canaries and more.
+
+version: "1.14.1"
+license: Apache-2.0
+base: ubuntu:22.04
+platforms:
+  amd64:
+
+entrypoint: ["/bin/pebble", "run", "-v"]
+
+parts:
+  seldon-core-operator:
+    plugin: dump
+    source: https://github.com/SeldonIO/seldon-core
+    source-type: git
+    source-tag: operator/v1.14.1
+    build-snaps:
+      - go/1.19/stable
+      - kustomize/latest/stable
+    override-build: |
+      set -x
+      cd $CRAFT_PART_SRC/operator
+
+      # Download go dependencies and build the manager binary
+      go mod download
+      go build -a -o manager main.go
+
+      # Install the manager binary and the licenses file
+      install -D manager $CRAFT_PART_INSTALL/opt/seldon-core-operator/manager
+      install -D licenses/license.txt $CRAFT_PART_INSTALL/opt/seldon-core-operator/licenses/license.txt
+
+      # TODO: Validate if we indeed need to do this given that the charm overrides the /tmp dir
+      # Generate the resources per the upstream OCI image
+      make generate-resources
+      
+      # Install the generated resources into /tmp/operator-resources
+      res="$CRAFT_PART_INSTALL/tmp/operator-resources/"
+      install -D generated/v1_service_seldon-webhook-service.yaml "${res}/service.yaml"
+      install -D generated/v1_configmap_seldon-config.yaml "${res}/configmap.yaml"
+      install -D \
+        generated/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml \
+        "${res}/validate.yaml"
+      install -D \
+        generated/apiextensions.k8s.io_v1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml \
+        "${res}/crd-v1.yaml"
+
+  mpl-deps:
+    plugin: nil
+    after: [seldon-core-operator]
+    build-packages:
+      - wget
+    override-build: |
+      set -x
+      mkdir -p $CRAFT_PART_INSTALL/opt/seldon-core-operator/licenses/mpl_source
+      cd $CRAFT_PART_INSTALL/opt/seldon-core-operator/licenses/mpl_source
+      
+      # Per https://github.com/SeldonIO/seldon-core/blob/5591c42b6a40a44641b848d86f9228f623c64598/operator/Dockerfile
+      wget -qO armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
+      wget -qO go-sql-driver-mysql.tar.gz https://github.com/go-sql-driver/mysql/archive/master.tar.gz
+      wget -qO hashicorp-consul.tar.gz https://github.com/hashicorp/consul/archive/main.tar.gz
+      wget -qO hashicorp-errwrap.tar.gz https://github.com/hashicorp/errwrap/archive/master.tar.gz
+      wget -qO hashicorp-go-cleanhttp.tar.gz https://github.com/hashicorp/go-cleanhttp/archive/master.tar.gz
+      wget -qO hashicorp-go-immutable-radix.tar.gz https://github.com/hashicorp/go-immutable-radix/archive/master.tar.gz
+      wget -qO hashicorp-go-multierror.tar.gz https://github.com/hashicorp/go-multierror/archive/master.tar.gz
+      wget -qO hashicorp-go-plugin.tar.gz https://github.com/hashicorp/go-plugin/archive/master.tar.gz
+      wget -qO hashicorp-go-retryablehttp.tar.gz https://github.com/hashicorp/go-retryablehttp/archive/master.tar.gz
+      wget -qO hashicorp-go-rootcerts.tar.gz https://github.com/hashicorp/go-rootcerts/archive/master.tar.gz
+      wget -qO hashicorp-go-sockaddr.tar.gz https://github.com/hashicorp/go-sockaddr/archive/master.tar.gz
+      wget -qO hashicorp-go-uuid.tar.gz https://github.com/hashicorp/go-uuid/archive/master.tar.gz
+      wget -qO hashicorp-go-version.tar.gz https://github.com/hashicorp/go-version/archive/main.tar.gz
+      wget -qO hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+      wget -qO hashicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/main.tar.gz
+      wget -qO hashicorp-logutils.tar.gz https://github.com/hashicorp/logutils/archive/master.tar.gz
+      wget -qO hashicorp-memberlist.tar.gz https://github.com/hashicorp/memberlist/archive/master.tar.gz
+      wget -qO hashicorp-serf.tar.gz https://github.com/hashicorp/serf/archive/master.tar.gz
+      wget -qO hashicorp-vault.tar.gz https://github.com/hashicorp/vault/archive/master.tar.gz
+      wget -qO hashicorp-yamux.tar.gz https://github.com/hashicorp/yamux/archive/master.tar.gz
+      wget -qO mitchellh-cli.tar.gz https://github.com/mitchellh/cli/archive/master.tar.gz
+      wget -qO mitchellh-gox.tar.gz https://github.com/mitchellh/gox/archive/master.tar.gz
+      wget -qO mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observatory/archive/master.tar.gz
+
+  default-config:
+    plugin: dump
+    source: files
+    organize:
+      001-default.yaml: var/lib/pebble/default/layers/001-default.yaml
+    stage:
+      - var/lib/pebble/default/layers/001-default.yaml
+

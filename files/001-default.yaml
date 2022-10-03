@@ -1,0 +1,10 @@
+summary: Initial seldon-core-operator layer
+description: |
+  A simple Pebble layer included with the underlying 
+  ROCK that can be used to start and test the Seldon 
+  Core Operator instance within.
+services:
+  manager:
+    override: replace
+    command: /opt/seldon-core-operator/manager --enable-leader-election --webhook-port 4443 --create-resources true
+    startup: enabled
