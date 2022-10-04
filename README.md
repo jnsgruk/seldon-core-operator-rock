@@ -1,7 +1,7 @@
 # Seldon Core Operator OCI Image
 
 This repository is intended as a demonstration of how to port an OCI image that it otherwise
-defined using a `Dockerfile` to one built with [rockcraft](https://github.com/canonical/rockcraft). 
+defined using a `Dockerfile` to one built with [rockcraft](https://github.com/canonical/rockcraft).
 
 It provides a direct port of this [Dockerfile](https://github.com/SeldonIO/seldon-core/blob/5591c42b6a40a44641b848d86f9228f623c64598/operator/Dockerfile).
 
@@ -33,6 +33,5 @@ $ docker run --rm -it jnsgruk/seldon-core-operator:1.14.1
 - [ ] Validate if the YAML resources in `/tmp/operator-resources` are required
 - [ ] Test with an actual charm deployment
 - [ ] Fine-tune the default Pebble layer
-- [ ] Run the operator as a non-root user
+- [x] Run the operator as a non-root user
 - [ ] Trim the default image size using [chiselled ubuntu](https://github.com/canonical/chisel)
-

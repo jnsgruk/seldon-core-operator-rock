@@ -42,7 +42,7 @@ parts:
       # TODO: Validate if we indeed need to do this given that the charm overrides the /tmp dir
       # Generate the resources per the upstream OCI image
       make generate-resources
-      
+
       # Install the generated resources into /tmp/operator-resources
       res="$CRAFT_PART_INSTALL/tmp/operator-resources/"
       install -D generated/v1_service_seldon-webhook-service.yaml "${res}/service.yaml"
@@ -63,7 +63,7 @@ parts:
       set -x
       mkdir -p $CRAFT_PART_INSTALL/opt/seldon-core-operator/licenses/mpl_source
       cd $CRAFT_PART_INSTALL/opt/seldon-core-operator/licenses/mpl_source
-      
+
       # Per https://github.com/SeldonIO/seldon-core/blob/5591c42b6a40a44641b848d86f9228f623c64598/operator/Dockerfile
       wget -qO armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
       wget -qO go-sql-driver-mysql.tar.gz https://github.com/go-sql-driver/mysql/archive/master.tar.gz
@@ -97,3 +97,14 @@ parts:
     stage:
       - var/lib/pebble/default/layers/001-default.yaml
 
+  non-root-user:
+    plugin: nil
+    after: [default-config]
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      groupadd -R $CRAFT_OVERLAY -g 1000 seldon
+      useradd -R $CRAFT_OVERLAY -M -r -u 1000 -g seldon seldon
+    override-prime: |
+      craftctl default
+      chown -R 1000:1000 opt/seldon-core-operator
+      chown -R 1000:1000 tmp/operator-resources
