@@ -31,7 +31,7 @@ $ docker run --rm -it jnsgruk/seldon-core-operator:1.14.1
 ## TODO
 
 - [ ] Validate if the YAML resources in `/tmp/operator-resources` are required
-- [ ] Test with an actual charm deployment
+- [x] Test with an actual charm deployment
 - [ ] Fine-tune the default Pebble layer
 - [x] Run the operator as a non-root user
 - [ ] Trim the default image size using [chiselled ubuntu](https://github.com/canonical/chisel)
