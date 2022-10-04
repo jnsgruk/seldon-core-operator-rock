@@ -8,3 +8,4 @@ services:
     override: replace
     command: /opt/seldon-core-operator/manager --enable-leader-election --webhook-port 4443 --create-resources true
     startup: enabled
+    user: seldon
