@@ -7,7 +7,6 @@ on:
     paths:
       - "rockcraft.yaml"
       - "files/**"
-      - ".github/workflows/**.yaml"
 
 jobs:
   build:
